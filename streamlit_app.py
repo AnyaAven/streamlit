@@ -166,3 +166,13 @@ font="monospace"
 
 number = st.sidebar.slider('Select a number:', 0, 10, 5)
 st.write('Selected number from slider widget is:', number)
+
+
+st.write("DB username:", st.secrets["db_username"])
+st.write("DB password:", st.secrets["db_password"])
+st.write("My cool secrets:", st.secrets["my_cool_secrets"]["things_i_like"])
+
+import os
+st.write(
+	"Has environment variables been set:",
+	os.environ["db_username"] == st.secrets["db_username"])
