@@ -174,5 +174,5 @@ st.write("My cool secrets:", st.secrets["my_cool_secrets"]["things_i_like"])
 
 import os
 st.write(
-	"Has environment variables been set:",
-	os.environ["db_username"] == st.secrets["db_username"])
+    "Has environment variables been set:",
+    os.environ["db_username"] == st.secrets["db_username"])
