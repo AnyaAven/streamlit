@@ -53,8 +53,8 @@ if all_time_resp.status_code == 200:
 
     st.title('WakaTime All-Time Insights')
 
-    st.subheader(f'Total Time Spent since {range_start_date} 🕒')
-    st.write(f"Total time: **{text_total_time}** ({total_hours:.2f} hours)")
+    st.subheader(f'Total Time Coding since {range_start_date} 🕒')
+    st.write(f"Total time: **{text_total_time}** ")
 
 
 else:
@@ -84,7 +84,7 @@ if insights_resp.status_code == 200 and languages_resp.status_code == 200:
         'Total Hours': totals
     })
 
-    st.header('Average Hours by Category')
+    st.header('Average Hours')
     fig = px.bar(df, x='Weekday', y='Average Hours', color='Category', barmode='group',
                  title='Average Hours by Category for Each Weekday')
     st.plotly_chart(fig)
@@ -92,8 +92,9 @@ if insights_resp.status_code == 200 and languages_resp.status_code == 200:
     languages, total_hours = [], []
 
     for language in languages_data:
-        languages.append(language['name'])
-        total_hours.append(language['total_seconds'] / 3600)
+        if(language['total_seconds'] / 3600 > 2):
+            languages.append(language['name'])
+            total_hours.append(language['total_seconds'] / 3600)
 
     df_languages = pd.DataFrame({
         'Language': languages,
