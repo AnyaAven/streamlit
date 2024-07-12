@@ -10,6 +10,22 @@ from datetime import time, datetime
 # import pandas_profiling
 # from streamlit_pandas_profiling import st_profile_report
 
+# BALLOOONSSSSSSSSssssssssssssssss
+
+# from time import sleep
+# st.title('st.progress')
+
+# with st.expander('About this app'):
+#     st.write('You can now display the progress of your calculations in a Streamlit app with the `st.progress` command.')
+
+# my_bar = st.progress(0)
+
+# for percent_complete in range(100):
+#     sleep(0.05)
+#     my_bar.progress(percent_complete + 1)
+
+# st.balloons()
+
 
 st.header('st.button')
 
@@ -177,16 +193,3 @@ st.write(
     "Has environment variables been set:",
     os.environ["db_username"] == st.secrets["db_username"])
 
-from time import sleep
-st.title('st.progress')
-
-with st.expander('About this app'):
-    st.write('You can now display the progress of your calculations in a Streamlit app with the `st.progress` command.')
-
-my_bar = st.progress(0)
-
-for percent_complete in range(100):
-    sleep(0.05)
-    my_bar.progress(percent_complete + 1)
-
-st.balloons()
