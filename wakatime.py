@@ -12,6 +12,8 @@ WAKA_TIME_URL = 'https://wakatime.com/api/v1/'
 SUMMARY_ENDPOINT = 'users/current/summaries'
 INSIGHTS_ENDPOINT = 'users/current/insights/weekdays/last_year'
 LANGUAGES_ENDPOINT = 'users/current/insights/languages/all_time'
+ALL_TIME_ENDPOINT = 'users/current/all_time_since_today'
+
 
 start_date = '2024-07-01'
 end_date = '2024-07-07'
@@ -25,27 +27,55 @@ insights_resp = requests.get(
     WAKA_TIME_URL + INSIGHTS_ENDPOINT,
     headers={'Authorization': f'Basic {api_key}'})
 
-languages_response = requests.get(
+languages_resp = requests.get(
     WAKA_TIME_URL + LANGUAGES_ENDPOINT, headers={'Authorization': f'Basic {api_key}'})
 
-if insights_resp.status_code == 200:
-    data = insights_resp.json()['data']['weekdays']
+summary_resp = requests.get(
+    WAKA_TIME_URL + SUMMARY_ENDPOINT,
+    params=params,
+    headers={'Authorization': f'Basic {api_key}'})
+
+all_time_resp = requests.get(
+    WAKA_TIME_URL + ALL_TIME_ENDPOINT, headers={'Authorization': f'Basic {api_key}'})
+
+
+if all_time_resp.status_code == 200:
+    all_time_data = all_time_resp.json()['data']
+
+    total_seconds = all_time_data['total_seconds']
+    total_hours = total_seconds / 3600
+
+    range_start_date = all_time_data['range']['start_date']
+    range_end_date = all_time_data['range']['end_date']
+
+
+    text_total_time = all_time_data['text']
 
     st.title('WakaTime All-Time Insights')
 
-    weekdays = []
-    categories = []
-    averages = []
-    totals = []
+    st.subheader(f'Total Time Spent since {range_start_date} 🕒')
+    st.write(f"Total time: **{text_total_time}** ({total_hours:.2f} hours)")
 
-    for day in data:
+
+else:
+    st.error(f'Failed to retrieve data: {
+             all_time_resp.status_code} - {all_time_resp.text}')
+
+if insights_resp.status_code == 200 and languages_resp.status_code == 200:
+    insights_data = insights_resp.json()['data']['weekdays']
+    languages_data = languages_resp.json()['data']['languages']
+
+
+    weekdays, categories, averages, totals = [], [], [], []
+
+    for day in insights_data:
         day_name = day['name']
         for category in day['categories']:
-            weekdays.append(day_name)
-            categories.append(category['name'])
-            # convert seconds to hours
-            averages.append(category['average'] / 3600)
-            totals.append(category['total'] / 3600)  # convert seconds to hours
+            if(category['name'] == 'Coding' or category['name'] == 'Browsing'):
+                weekdays.append(day_name)
+                categories.append(category['name'])
+                averages.append(category['average'] / 3600)
+                totals.append(category['total'] / 3600)  # convert seconds to hours
 
     df = pd.DataFrame({
         'Weekday': weekdays,
@@ -59,12 +89,9 @@ if insights_resp.status_code == 200:
                  title='Average Hours by Category for Each Weekday')
     st.plotly_chart(fig)
 
-    languages_data = languages_response.json()['data']['languages']
-    languages = []
-    total_hours = []
+    languages, total_hours = [], []
 
     for language in languages_data:
-
         languages.append(language['name'])
         total_hours.append(language['total_seconds'] / 3600)
 
@@ -83,22 +110,31 @@ else:
     st.error(f'Failed to retrieve data: {
              insights_resp.status_code} - {insights_resp.text}')
 
-summary_resp = requests.get(
-    WAKA_TIME_URL + SUMMARY_ENDPOINT,
-    params=params,
-    headers={'Authorization': f'Basic {api_key}'})
 
+# if summary_resp.status_code == 200:
+#     summary_data = summary_resp.json()['data']
+#     st.title('WakaTime Data Summary')
+#     st.write(f"Data from {start_date} to {end_date}")
 
-if summary_resp.status_code == 200:
-    data = summary_resp.json()
-    st.title('WakaTime Data Summary')
-    st.write(f"Data from {start_date} to {end_date}")
+#     # Process projects data to find top 5 projects
+#     all_projects = []
 
-    for summary_resp in data['data']:
-        st.subheader(summary_resp['range']['text'])
-        st.write(f"Total time: {summary_resp['grand_total']['text']}")
-        for project in summary_resp['projects']:
-            st.write(f"Project: {project['name']}, Time: {project['text']}")
-else:
-    st.error(f'Failed to retrieve data: {
-             summary_resp.status_code} - {summary_resp.text}')
+#     for day_data in summary_data:
+#         for project in day_data['projects']:
+#             all_projects.append(
+#                 {'name': project['name'], 'total_seconds': project['total_seconds']})
+
+#     df_projects = pd.DataFrame(all_projects)
+#     df_projects = df_projects.groupby('name', as_index=False).sum()
+#     df_projects = df_projects.sort_values(
+#         by='total_seconds', ascending=False).head(5)
+#     df_projects['total_hours'] = df_projects['total_seconds'] / \
+#         3600  # convert seconds to hours
+
+#     st.header('Top 5 Projects by Time Spent')
+#     fig = px.bar(df_projects, x='name', y='total_hours',
+#                  title='Top 5 Projects by Time Spent')
+#     st.plotly_chart(fig)
+
+#     all_files = []
+
